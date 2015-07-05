@@ -1,4 +1,7 @@
-.pyc
+*.pyc
 vbs_formatter/input.csv
 vbs_formatter/output.csv
+vbs_formatter/copy.csv
+
+
 

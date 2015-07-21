@@ -7,7 +7,7 @@
 from csv_util import *
 
 if __name__ == "__main__":
-	text_clean = lambda t: t.replace("2nd\n", "2nd ").replace("3rd\n", "3rd ").replace("4th\n", "4th ")
+	text_clean = lambda t: t.replace("2nd\n", "2nd ").replace("3rd\n", "3rd ").replace("4th\n", "4th ").upper()
 
 	params = read_csv("./data/params.csv")
 	input_csv = read_csv("input.csv", True, ',', text_clean)

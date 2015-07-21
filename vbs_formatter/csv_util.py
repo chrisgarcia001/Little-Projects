@@ -62,8 +62,11 @@ def write_csv(matrix, filename, sep = ','):
 #  -->    [['p', 'q', 'r', 's', 'u', 'v', 'd', 'e', 'f', 'g', 'k'], 
 #          ['m', 'n', 'o', 'd', 'e', 'f', 'g', 'k']]
 def to_multilinef(constant_cols, *col_sets):
-	fixed = col_indices(*constant_cols)
-	lines = map(lambda cs: col_indices(*cs) + fixed, col_sets)
-	return lambda data: map(lambda line: [data[i] for i in line], lines)
+	fixed_cols = col_indices(*constant_cols)
+	fixed_lines = lambda arr: [arr[i] for i in fixed_cols]
+	var_col_sets = map(lambda cs: col_indices(*cs), col_sets)all_var_lines = lambda arr: map(lambda vs: [arr[i] for i in vs], var_col_sets)
+	var_lines = lambda arr: filter(lambda line: len(map(lambda y: not(y in ['', ' ']), line)) > 0, all_var_lines(arr))
+	return lambda arr: map(lambda x: x + fixed_lines(arr), var_lines(arr)) 
+	
 	
 

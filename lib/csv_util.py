@@ -47,6 +47,11 @@ def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x):
 	start_pos = 0 if include_headers else 1
 	lines = map(lambda y: y.strip(), txt.split("\n"))[start_pos:]
 	return map(lambda x: x.split(sep), lines)
+
+# Reads a CSV as an dict of args
+def read_csv_args(filename, sep = ',', cleanf = lambda x: x):
+	lines = read_csv(filename, True, ',', lambda x: x)
+	return dict(map(lambda line: (line[0], line[1]), lines))
 	
 # Writes a matrix (2D list) to a CSV file.
 def write_csv(matrix, filename, sep = ','):

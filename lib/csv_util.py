@@ -39,24 +39,19 @@ def write_file(text, filename):
 	f.close()
 	
 # Reads a CSV as a list of rows	
-def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x, ignore_lines = None):
+def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x):
 	fl = open(filename)
 	txt = cleanf(fl.read())
-	fl.close()
+	lines = fl.readlines()
+	lines = []
 	start_pos = 0 if include_headers else 1
 	lines = map(lambda y: y.strip(), txt.split("\n"))[start_pos:]
-	if ignore_lines != None:
-		lines = filter(lambda x: not(x.startswith(ignore_lines)), lines)
 	return map(lambda x: x.split(sep), lines)
 	
-# Reads a CSV as an dict of args
-def read_csv_args(filename, sep = ',', cleanf = lambda x: x, ignore_lines = None):
-	lines = read_csv(filename, True, ',', cleanf, ignore_lines)
-	return dict(map(lambda line: (line[0], line[1]), lines))
-	
 # Writes a matrix (2D list) to a CSV file.
-def write_csv(matrix, filename, sep = ','):
-	text = reduce(lambda x,y: x + "\n" + y, map(lambda row: sep.join(row), matrix))
+def write_csv(matrix, filename, sep = ',', replace_sep = ' '):
+	clean_text = lambda s: s.replace(sep, replace_sep)
+	text = reduce(lambda x,y: x + "\n" + y, map(lambda row: sep.join(map(clean_text, row)), matrix))
 	write_file(text, filename)
 	
 # Constructs a function which will extract values in a single array
@@ -70,7 +65,8 @@ def write_csv(matrix, filename, sep = ','):
 def to_multilinef(constant_cols, *col_sets):
 	fixed_cols = col_indices(*constant_cols)
 	fixed_lines = lambda arr: [arr[i] for i in fixed_cols]
-	var_col_sets = map(lambda cs: col_indices(*cs), col_sets)all_var_lines = lambda arr: map(lambda vs: [arr[i] for i in vs], var_col_sets)
+	var_col_sets = map(lambda cs: col_indices(*cs), col_sets)
+	all_var_lines = lambda arr: map(lambda vs: [arr[i] for i in vs], var_col_sets)
 	var_lines = lambda arr: filter(lambda line: len(map(lambda y: not(y in ['', ' ']), line)) > 0, all_var_lines(arr))
 	return lambda arr: map(lambda x: x + fixed_lines(arr), var_lines(arr)) 
 	

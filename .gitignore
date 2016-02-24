@@ -1,7 +1,6 @@
 *.pyc
-vbs_formatter/input.csv
-vbs_formatter/output.csv
-vbs_formatter/copy.csv
+vbs_formatter/*.csv
+vbs_formatter/*.xlsx
 courthouse/app_info.txt
 
 

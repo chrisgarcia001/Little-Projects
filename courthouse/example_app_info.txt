@@ -1,3 +1,6 @@
 Place parameters here - comments begin with #
-point_sheet_path = <path to data>
-attendence_2014_15 = <path to xlsx>
+point_sheet_input_path = <path to top-level input data folder>
+point_sheet_output_path = <folder for CSV output>
+attendance_sheet_input_path = <path to top-level input data folder>
+attendance_sheet_output_path = <folder for CSV output>
+

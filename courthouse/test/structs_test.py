@@ -1,15 +1,15 @@
 from os import sys
-sys.path.insert(0, '../src/')
+sys.path.insert(0, '../lib/')
 from readers import *
 from util import *
 
 params = read_params('../app_info.txt', '=')
-path = params['point_sheet_path']
+point_sheet_path = params['point_sheet_input_path']
 level = 'leaves'
 
-#fr = FolderReader(path, PointSheetReader, level)
+#fr = FolderReader(point_sheet_path, PointSheetReader, level)
 #print(fr.get_data_points())
 
-ay_14_15 = params['attendence_2014_15']
-ar = AttendanceSheetReader(ay_14_15)
-print(ar.get_data_points())
+attendance_sheet_path = params['attendance_sheet_input_path']
+fr = FolderReader(attendance_sheet_path, AttendanceSheetReader, level)
+print(fr.get_data_points())

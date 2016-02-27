@@ -59,7 +59,7 @@ class PointSheetReader(object):
 					dp['day'] = int(day) 
 					dp['month'] = int(month)
 					dp['year'] = int(year)
-					dp['date'] = str(day) + '/' + str(month) + '/' + str(year)
+					dp['date'] = str(month) + '/' + str(day) + '/' + str(year)
 		return data_points
 
 # This class reads a single attendance data spreadsheet.
@@ -71,6 +71,7 @@ class AttendanceSheetReader(object):
 	def set_path(self, file_path):
 		self.file_path = file_path
 	
+	# Parse a month into integer format, whether starts in full, abbreviated, or integer format.
 	def parse_month(self, month):
 		month_abvs = {"jan":1, "feb":2, "mar":3, "apr":4, "may":5, "jun":6,
 		              "jul":7, "aug":8, "sep":9, "oct":10, "nov":11, "dec":12}
@@ -79,21 +80,51 @@ class AttendanceSheetReader(object):
 				return month_abvs[m]
 		return int(month)
 	
+	# Parse a name into first and last.
+	def parse_name(self, name):
+		name = name.strip()
+		if name.lower().startswith('courthouse') or name.lower().startswith('student'):
+			return None
+		if ',' in name:
+			names = map(lambda x: x.strip(), filter(lambda y: not(y in ['', None, ' ']), name.split(',')))
+			return({'first':names[1], 'last':names[0]})
+		else:
+			names = map(lambda x: x.strip(), filter(lambda y: not(y in ['', None, ' ']), name.split(' ')))
+			if len(names) == 2:
+				return({'first':names[0], 'last':names[1]})
+			return None
+	
 	def get_data_points(self):
 		ss = xlrd.open_workbook(self.file_path)
 		sheet_names = ss.sheet_names()
 		data_points = []
-		month, year = -1, -1
-		for month in sheet_names:
-			sheet = ss.sheet_by_name(month)
+		for sn in sheet_names:
+			month, year = -1, -1
+			sheet = ss.sheet_by_name(sn)
 			try:
 				month = self.parse_month(sheet.cell(1, 28).value)
-				year = sheet.cell(2, 28).value
+				year = int(sheet.cell(2, 28).value)
 			except:
 				month = self.parse_month(sheet.cell(1, 29).value)
 				year = int(sheet.cell(2, 29).value)
-			print((month, year))
-			# TODO - Pick Up Here!!!
+			for row in range(sheet.nrows):
+				name = self.parse_name((str(sheet.cell(row, 1).value)))
+				if name != None:
+					tardy, absent, suspend = 0, 0, 0
+					for col in range(2, sheet.ncols):
+						try:
+							val = str(sheet.cell(row, col).value).strip().lower()
+							if val.startswith('t'):
+								tardy += 1
+							if val == 'a':
+								absent += 1
+							if val == 's':
+								suspend += 1
+						except:
+							None
+					data_points.append({'first_name':name['first'], 'last_name':name['last'], 'month':month,
+										'year':year, 'tardy':tardy, 'absent':absent, 'suspend':suspend})
+					
 		return data_points
 		
 		

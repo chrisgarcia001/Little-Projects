@@ -2,6 +2,8 @@
 vbs_formatter/*.csv
 vbs_formatter/*.xlsx
 courthouse/app_info.txt
+*point-sheet-data.csv
+*attendance-sheet-data.csv
 
 
 

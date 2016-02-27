@@ -10,21 +10,22 @@ from datetime import datetime
 # This class reads a single point sheet data spreadsheet.
 class PointSheetReader(object):
 	def __init__(self, file_path=None):
-		self.data_points = []
 		if file_path != None:
 			self.set_path(file_path)
 	
 	def row_index(self, sheet, column, text_value_prefix):
 		for row in range(sheet.nrows):
-			#print(str(row) + ": " + str(sheet.cell(row, column).value).strip().lower())
 			if str(sheet.cell(row, column).value).strip().lower().startswith(text_value_prefix.strip().lower()):
 				return row
 		return -1
 	
 	def set_path(self, file_path):
-		ss = xlrd.open_workbook(file_path)
+		self.file_path = file_path
+		
+	def get_data_points(self):
+		ss = xlrd.open_workbook(self.file_path)
 		sheet_names = ss.sheet_names()
-		self.data_points = []
+		data_points = []
 		teacher = None
 		raw_date = None
 		day, month, year = -1, -1, -1
@@ -51,18 +52,29 @@ class PointSheetReader(object):
 				behavior_total = float(sheet.cell(32,8).value)
 				data_point = {'student':str(student), 'teacher':str(teacher), 
 							  'academic_total':academic_total, 'behavior_total':behavior_total}
-				self.data_points.append(data_point)
+				data_points.append(data_point)
 			except:
-				print("Error extracting student: " + str((student, file_path)))
-		for dp in self.data_points:
+				print("Error extracting student: " + str((student, self.file_path)))
+		for dp in data_points:
 					dp['day'] = int(day) 
 					dp['month'] = int(month)
 					dp['year'] = int(year)
 					dp['date'] = str(day) + '/' + str(month) + '/' + str(year)
-	
-	def get_data_points(self):
-		return self.data_points
+		return data_points
 
+# This class reads a single attendance data spreadsheet.
+class AttendanceSheetReader(object):
+	def __init__(self, file_path=None):
+		if file_path != None:
+			self.set_path(file_path)
+	
+	def set_path(self, file_path):
+		self.file_path = file_path
+		
+	def get_data_points(self):
+		return []
+		
+		
 # This applies a FileReader class to individual files at a specified nested depth. 
 # A depth of 0 is the same as the folder path specified, 1 is 1 level below, etc.
 # The file_reader_class is the type of FileReader class. Additionally, file extensions

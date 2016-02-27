@@ -1,4 +1,4 @@
-Place parameters here - comments begin with #
+# Place parameters here - comments begin with #
 point_sheet_input_path = <path to top-level input data folder>
 attendance_sheet_input_path = <path to top-level input data folder>
 output_path = <folder for CSV output>

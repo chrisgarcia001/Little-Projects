@@ -70,9 +70,31 @@ class AttendanceSheetReader(object):
 	
 	def set_path(self, file_path):
 		self.file_path = file_path
-		
+	
+	def parse_month(self, month):
+		month_abvs = {"jan":1, "feb":2, "mar":3, "apr":4, "may":5, "jun":6,
+		              "jul":7, "aug":8, "sep":9, "oct":10, "nov":11, "dec":12}
+		for m in month_abvs.keys():
+			if str(month).lower().startswith(m):
+				return month_abvs[m]
+		return int(month)
+	
 	def get_data_points(self):
-		return []
+		ss = xlrd.open_workbook(self.file_path)
+		sheet_names = ss.sheet_names()
+		data_points = []
+		month, year = -1, -1
+		for month in sheet_names:
+			sheet = ss.sheet_by_name(month)
+			try:
+				month = self.parse_month(sheet.cell(1, 28).value)
+				year = sheet.cell(2, 28).value
+			except:
+				month = self.parse_month(sheet.cell(1, 29).value)
+				year = int(sheet.cell(2, 29).value)
+			print((month, year))
+			# TODO - Pick Up Here!!!
+		return data_points
 		
 		
 # This applies a FileReader class to individual files at a specified nested depth. 

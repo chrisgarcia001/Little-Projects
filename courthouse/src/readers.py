@@ -101,9 +101,12 @@ class FolderReader:
 					return []
 			return reduce(lambda x,y: x + y, map(dp, self.get_file_names()) + [])
 		elif str(self.level).lower() == 'leaves':
-			if len(get_subdir_names()) == 0:
+			if len(self.get_subdir_names()) == 0:
 				fr = FolderReader(self.path, self.file_reader, level=0, file_ext=self.file_ext)
 				return fr.get_data_points()
+			else:
+				dp = lambda dirname: FolderReader(self.path + "/" + dirname, self.file_reader, level="leaves", file_ext=self.file_ext).get_data_points()
+				return reduce(lambda x,y: x + y, map(dp, self.get_subdir_names()) + [])
 		else:
 			dp = lambda dirname: FolderReader(self.path + "/" + dirname, self.file_reader, level=self.level - 1, file_ext=self.file_ext).get_data_points()
 			return reduce(lambda x,y: x + y, map(dp, self.get_subdir_names()) + [])

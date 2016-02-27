@@ -1,1 +1,3 @@
-Place path to top-level local data directory here - comments begin with #
+Place parameters here - comments begin with #
+point_sheet_path = <path to data>
+attendence_2014_15 = <path to xlsx>

@@ -62,7 +62,7 @@ class PointSheetReader(object):
 					dp['date'] = str(month) + '/' + str(day) + '/' + str(year)
 		return data_points
 
-# This class reads a single attendance data spreadsheet.
+# This class reads a single (school) attendance data spreadsheet.
 class AttendanceSheetReader(object):
 	def __init__(self, file_path=None):
 		if file_path != None:
@@ -126,7 +126,40 @@ class AttendanceSheetReader(object):
 										'year':year, 'tardy':tardy, 'absent':absent, 'suspend':suspend})
 					
 		return data_points
+
+# This class reads a single Aikido attendance data spreadsheet.		
+class AikidoAttendenceDataReader(object):
+	def __init__(self, file_path=None):
+		if file_path != None:
+			self.set_path(file_path)
+			self.ss = xlrd.open_workbook(self.file_path)
+		self.sheet = self.ss.sheet_by_name("Cumulative Attendance")
+	
+	def get_col_key_dates(self):
+		sheet = self.sheet
+		dates = {} # column:date
+		for col in range(1, sheet.ncols):
+			try:
+				raw_date = sheet.cell(0, col).value
+				print(raw_date)
+				py_date = xlrd.xldate.xldate_as_datetime(raw_date, self.ss.datemode)
+				day, month, year = py_date.day, py_date.month, py_date.year
+				dates[col] = str(month) + "/" + str(day) + "/" + str(year)
+			except:
+				print("Non-date...")
+		return dates
 		
+	
+	
+	def set_path(self, file_path):
+		self.file_path = file_path
+		
+	def get_data_points(self):
+		data_points = []
+		data_points = self.get_col_key_dates() # Dummy line - remove/update
+		# TODO: Update, add 
+		return data_points
+
 		
 # This applies a FileReader class to individual files at a specified nested depth. 
 # A depth of 0 is the same as the folder path specified, 1 is 1 level below, etc.

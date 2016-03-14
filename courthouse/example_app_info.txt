@@ -1,5 +1,6 @@
 # Place parameters here - comments begin with #
 point_sheet_input_path = <path to top-level input data folder>
 attendance_sheet_input_path = <path to top-level input data folder>
+aikido_attendence_data_path = <path to top-level input data fold
 output_path = <folder for CSV output>
 

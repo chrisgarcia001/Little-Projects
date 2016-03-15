@@ -135,13 +135,15 @@ class AikidoAttendenceDataReader(object):
 			self.ss = xlrd.open_workbook(self.file_path)
 		self.sheet = self.ss.sheet_by_name("Cumulative Attendance")
 	
+	def set_path(self, file_path):
+		self.file_path = file_path
+	
 	def get_col_key_dates(self):
 		sheet = self.sheet
 		dates = {} # column:date
 		for col in range(1, sheet.ncols):
 			try:
 				raw_date = sheet.cell(0, col).value
-				print(raw_date)
 				py_date = xlrd.xldate.xldate_as_datetime(raw_date, self.ss.datemode)
 				day, month, year = py_date.day, py_date.month, py_date.year
 				dates[col] = str(month) + "/" + str(day) + "/" + str(year)
@@ -149,16 +151,28 @@ class AikidoAttendenceDataReader(object):
 				print("Non-date...")
 		return dates
 		
-	
-	
-	def set_path(self, file_path):
-		self.file_path = file_path
+	def get_names_with_dates(self, start_at_row = 0, process_name_f = lambda x: x):
+		sheet = self.sheet
+		dates = self.get_col_key_dates()
+		data_points = []
+		for row in range(start_at_row, sheet.nrows):
+			try:
+				name = process_name_f(str(sheet.cell(row, 0).value).strip())
+				for col in range(1, sheet.ncols):
+					try:
+						if sheet.cell(row, col).value in [1, 1.0, "1"]:
+							data_points.append({"Name":name, "Date":dates[col]})
+					except:
+						print("Skipping (rw, col): " + str(row, col))
+			except:
+				print("Skipping row: " + str(row))
+		return data_points
+		
 		
 	def get_data_points(self):
-		data_points = []
-		data_points = self.get_col_key_dates() # Dummy line - remove/update
-		# TODO: Update, add 
-		return data_points
+		firstname_f = lambda x: filter(lambda y: not(y in ['', ' ', None]), x.strip().split(' '))[0]
+		return self.get_names_with_dates(0, process_name_f = firstname_f)
+		
 
 		
 # This applies a FileReader class to individual files at a specified nested depth. 

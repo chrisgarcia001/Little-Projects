@@ -10,4 +10,5 @@ level = 'leaves'
 
 fr = FolderReader(input_path, PointSheetReader, level)
 points = fr.get_data_points()
+#print(points)
 to_csv(points, output_path + '/' +'point-sheet-data.csv')

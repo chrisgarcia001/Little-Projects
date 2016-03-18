@@ -4,8 +4,85 @@ import xlrd
 import os
 from datetime import datetime
 
+# --------------------- UTILITY FUNCTIONS -------------------------------------------------
+
+# Get (row, column) indices of all cells matching the specified criteria function
+# sheet: A worksheet within a spreadsheet
+# criteria_f: val -> True | False
+def find_cells(sheet, match_val):#critera_f):
+	cells = []
+	#print("-------DIM: " + str((sheet.nrows, sheet .ncols)))
+	for row in range(sheet.nrows):
+		for col in range(sheet.ncols):
+			try:
+				# if not(str(sheet.cell(row, col).value) in ['', ' ', None]):
+					# print(str((row, col)) + str(sheet.cell(row, col).value))
+				#if(criteria_f(sheet.cell(row, col).value)):
+				if str(sheet.cell(row, col).value).lower() == str(match_val).lower():
+					#print((row, col))
+					cells.append((row, col))
+			except:
+				pass
+	return cells
+
+# --------------------- READERS -----------------------------------------------------------
 # All FileReader classes implement these methods: 1) set_path(path), 2) get_data_points():[data points]
 # Additionally, all FileReaders should take the file_path as the first constructor argument.
+
+# This class reads a single point sheet data spreadsheet.
+# class PointSheetReader(object):
+	# def __init__(self, file_path=None):
+		# if file_path != None:
+			# self.set_path(file_path)
+	
+	# def row_index(self, sheet, column, text_value_prefix):
+		# for row in range(sheet.nrows):
+			# if str(sheet.cell(row, column).value).strip().lower().startswith(text_value_prefix.strip().lower()):
+				# return row
+		# return -1
+	
+	# def set_path(self, file_path):
+		# self.file_path = file_path
+		
+	# def get_data_points(self):
+		# ss = xlrd.open_workbook(self.file_path)
+		# sheet_names = ss.sheet_names()
+		# data_points = []
+		# teacher = None
+		# raw_date = None
+		# day, month, year = -1, -1, -1
+		# for student in sheet_names:
+			# try:
+				# sheet = ss.sheet_by_name(student)
+				##teacher = sheet.cell(2,2).value
+				##raw_date = sheet.cell(7,2).value
+				# if teacher == None:
+					# try:
+						# teacher_row = self.row_index(sheet, 1, "Teacher")
+						# teacher = sheet.cell(teacher_row, 2).value
+					# except:
+						# print("Error extracting teacher: " + str((student, file_path)))
+				# if raw_date == None:
+					# try:
+						# date_row = self.row_index(sheet, 1, "Date")
+						# raw_date = sheet.cell(date_row,2).value
+						# py_date = xlrd.xldate.xldate_as_datetime(raw_date, ss.datemode)
+						# day, month, year = py_date.day, py_date.month, py_date.year
+					# except:
+						# print("Error extracting raw date: " + str((student, file_path)))
+				# academic_total = float(sheet.cell(32,7).value)
+				# behavior_total = float(sheet.cell(32,8).value)
+				# data_point = {'student':str(student), 'teacher':str(teacher), 
+							  # 'academic_total':academic_total, 'behavior_total':behavior_total}
+				# data_points.append(data_point)
+			# except:
+				# print("Error extracting student: " + str((student, self.file_path)))
+		# for dp in data_points:
+					# dp['day'] = int(day) 
+					# dp['month'] = int(month)
+					# dp['year'] = int(year)
+					# dp['date'] = str(month) + '/' + str(day) + '/' + str(year)
+		# return data_points
 
 # This class reads a single point sheet data spreadsheet.
 class PointSheetReader(object):
@@ -29,27 +106,47 @@ class PointSheetReader(object):
 		teacher = None
 		raw_date = None
 		day, month, year = -1, -1, -1
+		#prefix_f = lambda x: lambda y: str(y).strip().lower().startswith(str(x).strip().lower())
 		for student in sheet_names:
 			try:
 				sheet = ss.sheet_by_name(student)
-				#teacher = sheet.cell(2,2).value
-				#raw_date = sheet.cell(7,2).value
-				if teacher == None:
-					try:
-						teacher_row = self.row_index(sheet, 1, "Teacher")
-						teacher = sheet.cell(teacher_row, 2).value
-					except:
-						print("Error extracting teacher: " + str((student, file_path)))
+				# if teacher == None:
+					# try:
+						# print(find_cells(sheet, "Teacher"))
+						# #(row, col) = find_cells(sheet, prefix_f("Teacher"))[0]
+						# #print(row, col)
+						# #teacher_row = self.row_index(sheet, 1, "Teacher")
+						# #teacher = sheet.cell(teacher_row, 2).value
+						# teacher = sheet.cell(row, col + 1).value
+					# except:
+						# print("Error extracting teacher: " + str((student, file_path)))
 				if raw_date == None:
 					try:
-						date_row = self.row_index(sheet, 1, "Date")
-						raw_date = sheet.cell(date_row,2).value
+						#date_row = self.row_index(sheet, 1, "Date")
+						(row, col) = find_cells(sheet, "Date")[0]
+						print(" ---- Date: " + str((row, col)))
+						#raw_date = sheet.cell(date_row,2).value
+						raw_date = sheet.cell(row, col + 1).value
 						py_date = xlrd.xldate.xldate_as_datetime(raw_date, ss.datemode)
 						day, month, year = py_date.day, py_date.month, py_date.year
 					except:
 						print("Error extracting raw date: " + str((student, file_path)))
-				academic_total = float(sheet.cell(32,7).value)
-				behavior_total = float(sheet.cell(32,8).value)
+				academic_total = 0
+				behavior_total = 0
+				try:
+					totals = find_cells(sheet, "Total")	
+					(a_row, a_col) = totals[0]
+					(b_row, b_col) = totals[1]
+					#academic_total = float(sheet.cell(32,7).value)
+					#behavior_total = float(sheet.cell(32,8).value)
+					academic_total = float(sheet.cell(a_row + 1, a_col).value)
+					behavior_total = float(sheet.cell(b_row + 1, b_col).value)
+					if academic_total in ['', ' ', None]:
+						academic_total = 0
+					if behavior_total in ['', ' ', None]:
+						behavior_total = 0
+				except:
+					pass
 				data_point = {'student':str(student), 'teacher':str(teacher), 
 							  'academic_total':academic_total, 'behavior_total':behavior_total}
 				data_points.append(data_point)
@@ -62,6 +159,7 @@ class PointSheetReader(object):
 					dp['date'] = str(month) + '/' + str(day) + '/' + str(year)
 		return data_points
 
+		
 # This class reads a single (school) attendance data spreadsheet.
 class AttendanceSheetReader(object):
 	def __init__(self, file_path=None):

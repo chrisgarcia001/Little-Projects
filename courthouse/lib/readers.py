@@ -30,59 +30,59 @@ def find_cells(sheet, match_val):#critera_f):
 # Additionally, all FileReaders should take the file_path as the first constructor argument.
 
 # This class reads a single point sheet data spreadsheet.
-# class PointSheetReader(object):
-	# def __init__(self, file_path=None):
-		# if file_path != None:
-			# self.set_path(file_path)
+class PointSheetReaderOLD(object):
+	def __init__(self, file_path=None):
+		if file_path != None:
+			self.set_path(file_path)
 	
-	# def row_index(self, sheet, column, text_value_prefix):
-		# for row in range(sheet.nrows):
-			# if str(sheet.cell(row, column).value).strip().lower().startswith(text_value_prefix.strip().lower()):
-				# return row
-		# return -1
+	def row_index(self, sheet, column, text_value_prefix):
+		for row in range(sheet.nrows):
+			if str(sheet.cell(row, column).value).strip().lower().startswith(text_value_prefix.strip().lower()):
+				return row
+		return -1
 	
-	# def set_path(self, file_path):
-		# self.file_path = file_path
+	def set_path(self, file_path):
+		self.file_path = file_path
 		
-	# def get_data_points(self):
-		# ss = xlrd.open_workbook(self.file_path)
-		# sheet_names = ss.sheet_names()
-		# data_points = []
-		# teacher = None
-		# raw_date = None
-		# day, month, year = -1, -1, -1
-		# for student in sheet_names:
-			# try:
-				# sheet = ss.sheet_by_name(student)
-				##teacher = sheet.cell(2,2).value
-				##raw_date = sheet.cell(7,2).value
-				# if teacher == None:
-					# try:
-						# teacher_row = self.row_index(sheet, 1, "Teacher")
-						# teacher = sheet.cell(teacher_row, 2).value
-					# except:
-						# print("Error extracting teacher: " + str((student, file_path)))
-				# if raw_date == None:
-					# try:
-						# date_row = self.row_index(sheet, 1, "Date")
-						# raw_date = sheet.cell(date_row,2).value
-						# py_date = xlrd.xldate.xldate_as_datetime(raw_date, ss.datemode)
-						# day, month, year = py_date.day, py_date.month, py_date.year
-					# except:
-						# print("Error extracting raw date: " + str((student, file_path)))
-				# academic_total = float(sheet.cell(32,7).value)
-				# behavior_total = float(sheet.cell(32,8).value)
-				# data_point = {'student':str(student), 'teacher':str(teacher), 
-							  # 'academic_total':academic_total, 'behavior_total':behavior_total}
-				# data_points.append(data_point)
-			# except:
-				# print("Error extracting student: " + str((student, self.file_path)))
-		# for dp in data_points:
-					# dp['day'] = int(day) 
-					# dp['month'] = int(month)
-					# dp['year'] = int(year)
-					# dp['date'] = str(month) + '/' + str(day) + '/' + str(year)
-		# return data_points
+	def get_data_points(self):
+		ss = xlrd.open_workbook(self.file_path)
+		sheet_names = ss.sheet_names()
+		data_points = []
+		teacher = None
+		raw_date = None
+		day, month, year = -1, -1, -1
+		for student in sheet_names:
+			try:
+				sheet = ss.sheet_by_name(student)
+				#teacher = sheet.cell(2,2).value
+				#raw_date = sheet.cell(7,2).value
+				if teacher == None:
+					try:
+						teacher_row = self.row_index(sheet, 1, "Teacher")
+						teacher = sheet.cell(teacher_row, 2).value
+					except:
+						print("Error extracting teacher: " + str((student, file_path)))
+				if raw_date == None:
+					try:
+						date_row = self.row_index(sheet, 1, "Date")
+						raw_date = sheet.cell(date_row,2).value
+						py_date = xlrd.xldate.xldate_as_datetime(raw_date, ss.datemode)
+						day, month, year = py_date.day, py_date.month, py_date.year
+					except:
+						print("Error extracting raw date: " + str((student, file_path)))
+				academic_total = float(sheet.cell(32,7).value)
+				behavior_total = float(sheet.cell(32,8).value)
+				data_point = {'student':str(student), 'teacher':str(teacher), 
+							  'academic_total':academic_total, 'behavior_total':behavior_total}
+				data_points.append(data_point)
+			except:
+				print("Error extracting student: " + str((student, self.file_path)))
+		for dp in data_points:
+					dp['day'] = int(day) 
+					dp['month'] = int(month)
+					dp['year'] = int(year)
+					dp['date'] = str(month) + '/' + str(day) + '/' + str(year)
+		return data_points
 
 # This class reads a single point sheet data spreadsheet.
 class PointSheetReader(object):
@@ -106,20 +106,20 @@ class PointSheetReader(object):
 		teacher = None
 		raw_date = None
 		day, month, year = -1, -1, -1
-		#prefix_f = lambda x: lambda y: str(y).strip().lower().startswith(str(x).strip().lower())
 		for student in sheet_names:
+			first_name = ''
+			last_name = ''
+			try:
+				names = filter(lambda x: not(x in ['', ' ', None]), 
+								map(lambda y: y.strip(), str(student).split(' ')))
+				if len(names) > 0:
+					first_name = names[0]
+				if len(names) > 1:
+					last_name = names[1]
+			except:
+				pass
 			try:
 				sheet = ss.sheet_by_name(student)
-				# if teacher == None:
-					# try:
-						# print(find_cells(sheet, "Teacher"))
-						# #(row, col) = find_cells(sheet, prefix_f("Teacher"))[0]
-						# #print(row, col)
-						# #teacher_row = self.row_index(sheet, 1, "Teacher")
-						# #teacher = sheet.cell(teacher_row, 2).value
-						# teacher = sheet.cell(row, col + 1).value
-					# except:
-						# print("Error extracting teacher: " + str((student, file_path)))
 				if raw_date == None:
 					try:
 						#date_row = self.row_index(sheet, 1, "Date")
@@ -147,7 +147,7 @@ class PointSheetReader(object):
 						behavior_total = 0
 				except:
 					pass
-				data_point = {'student':str(student), 'teacher':str(teacher), 
+				data_point = {'f_name':first_name, 'l_name':last_name, 'teacher':str(teacher), 
 							  'academic_total':academic_total, 'behavior_total':behavior_total}
 				data_points.append(data_point)
 			except:

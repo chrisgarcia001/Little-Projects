@@ -109,13 +109,13 @@ class PointSheetReader(object):
 		for student in sheet_names:
 			first_name = ''
 			last_name = ''
+			if teacher == None:
+				try:
+					teacher_row = self.row_index(sheet, 1, "Teacher")
+					teacher = sheet.cell(teacher_row, 2).value
+				except:
+					print("Error extracting teacher: " + str((student, self.file_path)))
 			try:
-				if teacher == None:
-					try:
-						teacher_row = self.row_index(sheet, 1, "Teacher")
-						teacher = sheet.cell(teacher_row, 2).value
-					except:
-						print("Error extracting teacher: " + str((student, file_path)))
 				names = filter(lambda x: not(x in ['', ' ', None]), 
 								map(lambda y: y.strip(), str(student).split(' ')))
 				if len(names) > 0:

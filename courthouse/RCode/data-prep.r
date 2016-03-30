@@ -101,12 +101,16 @@ for(i in 1:nrow(ptsh)) {
 ### Mark Day Before/After/Of
 ptsh$aikido_day_before <- rep(0, nrow(ptsh))
 ptsh$aikido_day_after <- rep(0, nrow(ptsh))
+ptsh$aikido_day_of <- rep(0, nrow(ptsh))
 for(i in 1:nrow(ptsh)) {
 	if((i > 1) && (ptsh[i, "f_name"] == ptsh[i - 1, "f_name"]) && (ptsh[i - 1, "attended_aikido"] == 1)) {
 	   ptsh[i, "aikido_day_after"] <- 1
 	}
 	if((i < nrow(ptsh)) && (ptsh[i, "f_name"] == ptsh[i + 1, "f_name"]) && (ptsh[i + 1, "attended_aikido"] == 1)) {
 	   ptsh[i, "aikido_day_before"] <- 1
+	}
+	if(ptsh[i, "attended_aikido"] == 1) {
+	   ptsh[i, "aikido_day_of"] <- 1
 	}
 }
 

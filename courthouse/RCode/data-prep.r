@@ -20,8 +20,10 @@ recoder.f <- function(matches, new.val) {
 
 range.recoder.f <- function(lower.ranges, new.vals, default=NA) {
 	function(x) {
-		for(i in 1:length(lower.ranges)) {
-			if(x <= lower.ranges[i]) {return(new.vals[i])}
+		if(!is.na(x)) {
+			for(i in 1:length(lower.ranges)) {
+				if(x <= lower.ranges[i]) {return(new.vals[i])}
+			}
 		}
 		return(default)
 	}

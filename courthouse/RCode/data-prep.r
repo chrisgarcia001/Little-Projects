@@ -147,6 +147,7 @@ att_data$absent <- sapply(att_data$absent, recoder.f(NA, 0))
 att_data$tardy <- sapply(att_data$tardy, recoder.f(NA, 0))
 att_data$suspend <- sapply(att_data$suspend, recoder.f(NA, 0))
 att_data$q_cum_aikido <- sapply(att_data$q_cum_aikido, recoder.f(NA, "Q1"))
+att_data <- subset(att_data, ((year != -1) & (month != -1)))
 
 # ---------------------------------------------------------------------
 # STEP 3: WRITE FINAL ANALYTICAL DATA SHEETS

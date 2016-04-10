@@ -6,18 +6,8 @@ data.path <- "../Analytical-Data/"
 ptsh <- read.csv(paste(data.path, "ana_point_sheet.csv", sep=""))
 ptsh$date <- as.Date(ptsh$date)
 att <- read.csv(paste(data.path, "ana_attendance.csv", sep=""))
-
-## Re-code day before/after/of status
-# aikido.day.status <- rep(NA, nrow(ptsh))
-# for(i in 1:nrow(ptsh)) {
-	# if(ptsh[i,"aikido_day_before"] == 1) {aikido.day.status[i] <- "DayBefore"}
-	# if(ptsh[i,"aikido_day_after"] == 1) {aikido.day.status[i] <- "DayAfter"}
-	# if(ptsh[i,"aikido_day_of"] == 1) {aikido.day.status[i] <- "DayOf"}
-	
-# }
-# ptsh$aikido_day_status <- aikido.day.status
-
-# ptsh <- ptsh[which(ptsh$behavior_total != 0),]
+dates <- sapply(1:nrow(att), function(i){paste(att[i,"year"], att[i,"month"], "01", sep="-")})
+att$date <- dates
 
 # Data sanity check:
 bad <- ptsh[which(ptsh$behavior_total == 0 & !is.na(ptsh$aikido_day_status)),]
@@ -112,6 +102,46 @@ abline(lm(att$absent ~ att$monthly_cum_aikido), col="red", lwd=2)
 cor(att$monthly_cum_aikido, att$suspend)
 plot(att$monthly_cum_aikido, att$suspend, col='blue', pch=16)
 abline(lm(att$suspend ~ att$monthly_cum_aikido), col="red", lwd=2)
+
+# ----------------- ATTENDANCE: Look at top/bottom quantile comparisons over time ------------------------------
+tb <- att[which(att$q_cum_aikido == "Q1" | att$q_cum_aikido == "Q5"),]
+#q5.names <- unique(as.character(subset(tb, q_cum_aikido == "Q5")$f_name))
+#tb <- tb[which(is.element(as.character(tb$f_name), q5.names)),]
+abs.top.bottom <- ggplot(tb, aes(date, absent, color=q_cum_aikido)) + geom_point()
+tardy.top.bottom <- ggplot(tb, aes(date, tardy, color=q_cum_aikido)) + geom_point()
+suspend.top.bottom <- ggplot(tb, aes(date, suspend, color=q_cum_aikido)) + geom_point()
+
+abs.tb.aov <- aov(absent ~ q_cum_aikido, data=tb)
+summary(abs.tb.aov)
+model.tables(abs.tb.aov,"means")
+
+tardy.tb.aov <- aov(tardy ~ q_cum_aikido, data=tb)
+summary(tardy.tb.aov)
+model.tables(tardy.tb.aov,"means")
+
+suspend.tb.aov <- aov(suspend ~ q_cum_aikido, data=tb)
+summary(suspend.tb.aov)
+model.tables(suspend.tb.aov,"means")
+
+# --------------- ATTENDANCE - COMPARE OVER TIME ONLY THOSE WHO MADE IT INTO Q5 -------------------
+tb <- att
+q5.names <- unique(as.character(subset(att, q_cum_aikido == "Q5")$f_name))
+tb <- tb[which(is.element(as.character(tb$f_name), q5.names)),]
+abs.q5 <- ggplot(tb, aes(date, absent, color=q_cum_aikido)) + geom_point()
+tardy.q5 <- ggplot(tb, aes(date, tardy, color=q_cum_aikido)) + geom_point()
+suspend.q5 <- ggplot(tb, aes(date, suspend, color=q_cum_aikido)) + geom_point()
+
+abs.q5.aov <- aov(absent ~ q_cum_aikido, data=tb)
+summary(abs.q5.aov)
+model.tables(abs.q5.aov,"means")
+
+tardy.q5.aov <- aov(tardy ~ q_cum_aikido, data=tb)
+summary(tardy.q5.aov)
+model.tables(tardy.q5.aov,"means")
+
+suspend.q5.aov <- aov(suspend ~ q_cum_aikido, data=tb)
+summary(suspend.q5.aov)
+model.tables(suspend.q5.aov,"means")
 
 
 # -- Tardy DV

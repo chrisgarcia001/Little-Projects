@@ -81,7 +81,12 @@ sql2 <- 'SELECT ptsh.*, st_info.Grade, st_info.condition_id
 		 ON ptsh.f_name == st_info.f_name'
 		 
 ptsh <- sqldf(sql2)
+
+# Remove potentially questionable rows 
 ptsh <- subset(ptsh, !is.na(condition_id))
+
+# Exclude absences here - dealt with in attendance dataset.
+ptsh <- ptsh[which(ptsh$behavior_total != 0),]  
 
 ##Calculate Cumulative Aikido Exposure
 ptsh$date <- as.Date(ptsh$date, format='%m/%d/%Y')
@@ -116,9 +121,21 @@ for(i in 1:nrow(ptsh)) {
 	}
 }
 
+ptsh$date <- as.Date(ptsh$date)
+
+# Re-code day before/after/of status
+aikido.day.status <- rep(NA, nrow(ptsh))
+for(i in 1:nrow(ptsh)) {
+	if(ptsh[i,"aikido_day_before"] == 1) {aikido.day.status[i] <- "DayBefore"}
+	if(ptsh[i,"aikido_day_after"] == 1) {aikido.day.status[i] <- "DayAfter"}
+	if(ptsh[i,"aikido_day_of"] == 1) {aikido.day.status[i] <- "DayOf"}
+	
+}
+ptsh$aikido_day_status <- aikido.day.status
+
+
 ### Quantiles for aikido exposure
-arrange(ptsh, cum_aikido)
-ptsh$q_cum_aikido <- ordered.bin.labels(nrow(ptsh), 5)
+ptsh$q_cum_aikido <- labeled.quantiles(ptsh$cum_aikido)
 
 ### Adjust grade levels for academic year - initial grades are in 2015-16 AY.
 curr.year.start <- as.Date("2015-08-01")
@@ -128,6 +145,28 @@ ptsh$Grade <- ptsh$Grade - year.delta
 ### Set grade labels
 code.grade <- range.recoder.f(c(8,10,12), c("Middle School", "Lower High School", "Upper High School"))
 ptsh$q_grade <- sapply(ptsh$Grade, code.grade)
+
+# 2014-15 behavior/academic totals max out at 45, while 2015-16 max out at 50. Scale appropriately.
+for(i in 1:nrow(ptsh)) {
+	if((ptsh[i,"year"] < 2015) | ((ptsh[i,"month"] <= 6) & ptsh[i,"year"] == 2015)) {
+		ptsh[i,"behavior_total"] <- min(50, (50/45) * ptsh[i,"behavior_total"])
+		ptsh[i,"academic_total"] <- min(50, (50/45) * ptsh[i,"academic_total"])
+	}
+}
+
+
+# Control for differences in person   - EXPERIMENTAL
+# agg_pers_tmp <- group_by(ptsh, f_name)
+# agg_pers <- summarize(agg_pers_tmp, a.mean=mean(academic_total), a.sd=sd(academic_total),
+									# b.mean=mean(behavior_total), b.sd=sd(behavior_total))
+# adj_behavior <- c()
+# adj_academic <- c()
+
+# for(i in 1:nrow(ptsh)) {
+	# aa <- (ptsh[i,"academic_total"] - subset(agg_pers, f_name == ptsh[i,"f_name"])$a.mean) / subset(agg_pers, f_name == ptsh[i,"f_name"])$a.sd
+	# #adj_behavior[i] <- 
+# }
+
 
 # ---------------------------------------------------------------------
 # STEP 2: BUILD ATTENDANCE DATA

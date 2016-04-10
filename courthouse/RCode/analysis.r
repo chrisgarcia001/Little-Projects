@@ -65,7 +65,6 @@ summary(aov.full)
 
 # ----------------- PART III: Look at top/bottom quantile comparisons over time ------------------------------
 tb <- ptsh[which(ptsh$q_cum_aikido == "Q1" | ptsh$q_cum_aikido == "Q5"),]
-tb <- ptsh
 q5.names <- unique(as.character(subset(tb, q_cum_aikido == "Q5")$f_name))
 tb <- tb[which(is.element(as.character(tb$f_name), q5.names)),]
 behavior.top.bottom <- ggplot(tb, aes(date, behavior_total, color=q_cum_aikido)) + geom_point()

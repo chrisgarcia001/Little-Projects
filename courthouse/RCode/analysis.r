@@ -17,7 +17,9 @@ message(paste("Bad Rows:", nrow(bad)))
 cor(ptsh$behavior_total, ptsh$academic_total) #0.9831874 - the two are essentially the same
 
 # ----------------- PART II: BUILD SIMPLE PLOTS/ANALYSES OF AIKIDO EXPOSURE TO PERFORMANCE METRICS ---------------
-plot(ptsh$cum_aikido, ptsh$behavior_total, col='blue', pch=16)
+plot(ptsh$cum_aikido, ptsh$behavior_total, col='blue', pch=16,
+	   xlab="Cumulative Aikido (No. Training Sessions)", 
+	   ylab="Behavior Score (out of 50)", main="Relation Between Cumulative Aikido \nand Behavior Score")
 abline(lm(ptsh$behavior_total ~ ptsh$cum_aikido), col="red", lwd=2)
 
 plot(ptsh$cum_aikido, ptsh$academic_total, col='blue', pch=16)
@@ -53,7 +55,11 @@ model.tables(aov.full, "means")
 summary(aov.full)
 
 # Show the different quartiles over time
-behavior.all <- ggplot(ptsh, aes(date, behavior_total, color=q_cum_aikido)) + geom_point()
+behavior.all <- ggplot(ptsh, aes(date, behavior_total, color=q_cum_aikido)) + geom_point() +
+		labs(x="Date", y="Behavior Score (out of 50)", 
+		    title="Behavior Scores Over Time", color="Quintile")
+			
+			
 academic.all <- ggplot(ptsh, aes(date, academic_total, color=q_cum_aikido)) + geom_point()
 
 
@@ -61,7 +67,10 @@ academic.all <- ggplot(ptsh, aes(date, academic_total, color=q_cum_aikido)) + ge
 tb <- ptsh[which(ptsh$q_cum_aikido == "Q1" | ptsh$q_cum_aikido == "Q5"),]
 #q5.names <- unique(as.character(subset(tb, q_cum_aikido == "Q5")$f_name))
 #tb <- tb[which(is.element(as.character(tb$f_name), q5.names)),]
-behavior.top.bottom <- ggplot(tb, aes(date, behavior_total, color=q_cum_aikido)) + geom_point()
+behavior.top.bottom <- ggplot(tb, aes(date, behavior_total, color=q_cum_aikido)) + geom_point() +
+		labs(x="Date", y="Behavior Score (out of 50)", 
+		    title="Behavior Scores Over Time (Top/Bottom Quintiles)", color="Quintile")
+		
 academic.top.bottom <- ggplot(tb, aes(date, academic_total, color=q_cum_aikido)) + geom_point()
 
 ab <- aov(behavior_total ~ q_cum_aikido, data=tb)
@@ -74,7 +83,10 @@ q5.names <- unique(as.character(subset(tb, q_cum_aikido == "Q5")$f_name))
 tb <- tb[which(is.element(as.character(tb$f_name), q5.names)),]
 unique(tb$f_name) # Print names those who made it into Q5
 
-behavior.q5 <- ggplot(tb, aes(date, behavior_total, color=q_cum_aikido)) + geom_point()
+behavior.q5 <- ggplot(tb, aes(date, behavior_total, color=q_cum_aikido)) + geom_point() +
+		labs(x="Date", y="Behavior Score (out of 50)", 
+		    title="Behavior Scores Over Time (only students reaching Q5)", color="Quintile")
+			
 academic.q5 <- ggplot(tb, aes(date, academic_total, color=q_cum_aikido)) + geom_point()
 
 ab <- aov(behavior_total ~ q_cum_aikido, data=tb)
@@ -82,7 +94,12 @@ summary(ab)
 model.tables(ab,"means")
 
 # --------------- PART IV: LOOK AT TRENDS COMPARING DAY BEFORE/OF/AFTER -------------------------------------
-behavior.aikido.day <- ggplot(ptsh[which(!is.na(ptsh$aikido_day_status)),], aes(date, behavior_total, color=aikido_day_status)) + geom_point()
+behavior.aikido.day <- ggplot(ptsh[which(!is.na(ptsh$aikido_day_status)),], aes(date, behavior_total, color=aikido_day_status)) + 
+								geom_point() +
+								labs(x="Date", y="Behavior Score (out of 50)", 
+								title="Behavior Scores Over Time \nby Aikido Participation Status", color="Status")
+
+								
 academic.aikido.day <- ggplot(ptsh[which(!is.na(ptsh$aikido_day_status)),], aes(date, academic_total, color=aikido_day_status)) + geom_point()
 
 ad <- aov(behavior_total ~ aikido_day_status, data=subset(ptsh, !is.na(aikido_day_status)))

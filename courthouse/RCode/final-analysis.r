@@ -37,7 +37,7 @@ model.tables(aov.condition, "means")
 summary(aov.condition)
 
 
-# ----------------- PART V: HOW DOES AMT. AIKIDO AFFECT BEHAVIOR? ----------------------------------------
+# ----------------- PART IV: HOW DOES AMT. AIKIDO AFFECT BEHAVIOR? ----------------------------------------
 # --- First Look: What is the general relationship between Aikido and behavior?
 png("../cum-aikido-behavior.png")
 plot(ptsh$cum_aikido, ptsh$behavior_total, col='blue', pch=16,
@@ -76,7 +76,18 @@ ab <- aov(behavior_total ~ q_cum_aikido, data=tb)
 model.tables(ab,"means")
 summary(ab)
 	
-# ----------------- PART V: HOW DOES AMT. AIKIDO AFFECT TARDINESS, ABSENCES, AND SUSPENSIONS? --------------
+# --------------- PART V: LOOK AT TRENDS COMPARING DAY BEFORE/OF/AFTER -------------------------------------
+png("../days-of-week.png")
+with(ptsh, plot(aikido_day_status, behavior_total, col="orange", pch=16,
+	 xlab="Day of Week Relative to Training", ylab="Pt. Sheet Behavior Score (out of 50)",
+	 main="Behavior Score Distributions by Day of Week"))
+dev.off()
+
+ad <- aov(behavior_total ~ aikido_day_status, data=subset(ptsh, !is.na(aikido_day_status)))
+model.tables(ad, "means")
+summary(ad)	
+	
+# ----------------- PART VI: HOW DOES AMT. AIKIDO AFFECT TARDINESS, ABSENCES, AND SUSPENSIONS? --------------
 png("../cum-aikido-tard-abs-sus.png")
 par(mfrow = c(3, 1))
 cor(att$monthly_cum_aikido, att$tardy)

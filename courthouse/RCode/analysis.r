@@ -18,8 +18,9 @@ cor(ptsh$behavior_total, ptsh$academic_total) #0.9831874 - the two are essential
 
 # ----------------- PART II: BUILD SIMPLE PLOTS/ANALYSES OF AIKIDO EXPOSURE TO PERFORMANCE METRICS ---------------
 plot(ptsh$cum_aikido, ptsh$behavior_total, col='blue', pch=16,
-	   xlab="Cumulative Aikido (No. Training Sessions)", 
-	   ylab="Behavior Score (out of 50)", main="Relation Between Cumulative Aikido \nand Behavior Score")
+	   xlab="Cumulative Aikido (Num. Training Sessions)", 
+	   ylab="Pt. Sheet Behavior Score (out of 50)", 
+	   main="Relation Between Cumulative Aikido \nand Behavior Score")
 abline(lm(ptsh$behavior_total ~ ptsh$cum_aikido), col="red", lwd=2)
 
 plot(ptsh$cum_aikido, ptsh$academic_total, col='blue', pch=16)
@@ -30,7 +31,19 @@ summary(am)
 bm <- lm(behavior_total ~ cum_aikido, data=ptsh)
 summary(bm)
 
-with(ptsh, plot(Grade, behavior_total, col="blue", pch=16))
+par(mfrow = c(1, 2))
+with(ptsh, plot(q_grade, behavior_total, col="orange", pch=16,
+	 xlab="Grade Level", ylab="Pt. Sheet Behavior Score (out of 50)",
+	 main="Behavior Score Distributions by Grade"))
+	 
+with(ptsh, plot(condition_id, behavior_total, col="orange", pch=16,
+	 xlab="Condition ID", ylab="Pt. Sheet Behavior Score (out of 50)",
+	 main="Behavior Score Distributions by Condition"))
+	 
+with(ptsh, plot(q_cum_aikido, behavior_total, col="orange", pch=16,
+	 xlab="Cumulative Aikido Training Quintile", ylab="Pt. Sheet Behavior Score (out of 50)",
+	 main="Behavior Score Distributions by Cumulative Aikido"))
+
 with(ptsh, plot(Grade, academic_total, col="blue", pch=16))
 
 aov.f_name <- aov(behavior_total ~ f_name, data=ptsh)
@@ -56,7 +69,7 @@ summary(aov.full)
 
 # Show the different quartiles over time
 behavior.all <- ggplot(ptsh, aes(date, behavior_total, color=q_cum_aikido)) + geom_point() +
-		labs(x="Date", y="Behavior Score (out of 50)", 
+		labs(x="Date", y="Pt. Sheet Behavior Score (out of 50)", 
 		    title="Behavior Scores Over Time", color="Quintile")
 			
 			
@@ -108,17 +121,41 @@ summary(ad)
 
 # --------------- PART V: LOOK AT TRENDS ON ATTENDANCE -------------  
 
+par(mfrow = c(3, 1))
 cor(att$monthly_cum_aikido, att$tardy)
-plot(att$monthly_cum_aikido, att$tardy, col='blue', pch=16)
+plot(att$monthly_cum_aikido, att$tardy, col='blue', pch=16,
+	   xlab="Cumulative Aikido at Month Start (Num. Training Sessions)", 
+	   ylab="Num. Tardies in Month", 
+	   main="Relation Between Cumulative Aikido \nand Monthly Tardies")
 abline(lm(att$tardy ~ att$monthly_cum_aikido), col="red", lwd=2)
 
 cor(att$monthly_cum_aikido, att$absent)
-plot(att$monthly_cum_aikido, att$absent, col='blue', pch=16)
+plot(att$monthly_cum_aikido, att$absent, col='blue', pch=16,
+	   xlab="Cumulative Aikido at Month Start (Num. Training Sessions)", 
+	   ylab="Num. Absences in Month", 
+	   main="Relation Between Cumulative Aikido \nand Monthly Absences")
 abline(lm(att$absent ~ att$monthly_cum_aikido), col="red", lwd=2)
 
 cor(att$monthly_cum_aikido, att$suspend)
-plot(att$monthly_cum_aikido, att$suspend, col='blue', pch=16)
+plot(att$monthly_cum_aikido, att$suspend, col='blue', pch=16,
+	   xlab="Cumulative Aikido at Month Start (Num. Training Sessions)", 
+	   ylab="Num. Suspensions in Month", 
+	   main="Relation Between Cumulative Aikido \nand Monthly Suspensions")
 abline(lm(att$suspend ~ att$monthly_cum_aikido), col="red", lwd=2)
+dev.off()
+
+abs.aov <- aov(absent ~ q_cum_aikido, data=att)
+summary(abs.aov)
+model.tables(abs.aov,"means")
+
+tardy.aov <- aov(tardy ~ q_cum_aikido, data=att)
+summary(tardy.aov)
+model.tables(tardy.aov,"means")
+
+suspend.aov <- aov(suspend ~ q_cum_aikido, data=att)
+summary(suspend.aov)
+model.tables(suspend.aov,"means")
+
 
 # ----------------- ATTENDANCE: Look at top/bottom quantile comparisons over time ------------------------------
 tb <- att[which(att$q_cum_aikido == "Q1" | att$q_cum_aikido == "Q5"),]

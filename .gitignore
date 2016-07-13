@@ -1,4 +1,5 @@
 *.pyc
+vbs_formatter/*input*.csv
 vbs_formatter/2015/*input.csv
 vbs_formatter/2015/*output.csv
 vbs_formatter/2015/*.xlsx

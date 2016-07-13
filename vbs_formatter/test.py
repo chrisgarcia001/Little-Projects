@@ -13,4 +13,10 @@ f = to_multilinef(['D-G', 'K'], *[['P-S', 'U-V'], ['x-z']])
 print(f(data))
 
 bad_data = [['A', 'B,C,D'],['X','Y']]
-write_csv(bad_data, 'bad_data.csv')
+#write_csv(bad_data, 'bad_data.csv')
+
+a = "abcde"
+for v in a:
+	print(v)
+a[2] = 'Z'
+print(a)

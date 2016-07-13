@@ -37,6 +37,23 @@ def write_file(text, filename):
 	f = open(filename, "w")
 	f.write(text)
 	f.close()
+
+# In a CSV file, sometimes commas can occur in quoted strings - these should not
+# be interpreted as separators. This replaces such commas with spaces.	
+def within_quote_fix(string, sep=',', fix=' '):
+	stack = []
+	string = list(string)
+	for i in range(len(string)):
+		if len(stack) > 0 and string[i] == sep:
+			string[i] = fix
+		elif (len(stack) == 0 or string[i] != stack[len(stack) - 1]) and string[i] in ['"']:
+			stack.append(string[i])
+		elif len(stack) > 0 and string[i] == stack[len(stack) - 1]:
+			stack.pop()
+		else:
+			pass
+	return ''.join(string)
+	
 	
 # Reads a CSV as a list of rows	
 def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x):

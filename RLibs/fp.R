@@ -27,3 +27,9 @@ reduce <- function(f, items, identity=0) {
 vec_join <- function(str_vec, sep=' ') {
 	reduce(function(x,y){paste(x,y,sep=sep)}, str_vec)
 }
+
+
+
+has_substr <- function(pattern, string) {
+	
+}

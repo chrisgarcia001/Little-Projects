@@ -1,7 +1,10 @@
 *.pyc
-vbs_formatter/*input.csv
-vbs_formatter/*output.csv
-vbs_formatter/*.xlsx
+vbs_formatter/2015/*input.csv
+vbs_formatter/2015/*output.csv
+vbs_formatter/2015/*.xlsx
+vbs_formatter/2016/*input.csv
+vbs_formatter/2016/*output.csv
+vbs_formatter/2016/*.xlsx
 courthouse/app_info.txt
 *point-sheet-data.csv
 *attendance-sheet-data.csv

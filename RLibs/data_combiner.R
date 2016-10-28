@@ -3,7 +3,7 @@
 
 library(stringr)
 
-combine.data <- function(path='./', output.file='output.csv') {
+combine.data <- function(path='./', output.file=NULL) {
 	if(!endsWith(path, '/')) { path <- paste(path, '/', sep='') }
 	files <- dir(path)
 	dframe <- NULL
@@ -14,6 +14,10 @@ combine.data <- function(path='./', output.file='output.csv') {
 			else {dframe <- rbind(dframe, nframe)}
 		}
 	}
-	write.csv(dframe, output.file, row.names=FALSE)
+	if(!is.null(output.file)) {
+		write.csv(dframe, output.file, row.names=FALSE)
+	}
+	dframe
 }
+
 

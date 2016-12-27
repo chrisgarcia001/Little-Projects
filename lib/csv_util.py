@@ -48,13 +48,33 @@ def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x):
 	lines = map(lambda y: y.strip(), txt.split("\n"))[start_pos:]
 	return map(lambda x: x.split(sep), lines)
 
+# Evaluate and parse an input argument value.
+def standard_eval_input(input, sep = ':'):
+	is_struct = sep in input
+	strings = input.split(':')
+	vals = []
+	for s in strings:
+		try:
+			iv = int(s)
+			ivf = float(s)
+			if iv != ivf:
+				iv = ivf
+			vals.append(iv)
+		except:
+			vals.append(s)
+	if not(is_struct):
+		return vals[0]
+	return vals	
+	
 # Read a CSV file as a param set (dict).
-def read_params(filename, sep=','):
+def read_params(filename, sep=',', input_evaluator_f = standard_eval_input):
+	if input_evaluator_f == None:
+		input_evaluator_f = lambda x: x
 	lines = read_csv(filename, sep=sep)
 	h = {}
 	for line in lines:
 		if len(line) > 1:
-			h[line[0]] = line[1]
+			h[line[0]] = input_evaluator_f(line[1])
 	return h
 	
 # Writes a matrix (2D list) to a CSV file.

@@ -51,7 +51,7 @@ def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x):
 # Evaluate and parse an input argument value.
 def standard_eval_input(input, sep = ':'):
 	is_struct = sep in input
-	strings = input.split(sep)
+	strings = map(lambda x: x.strip(), input.split(sep))
 	vals = []
 	for s in strings:
 		try:
@@ -61,7 +61,12 @@ def standard_eval_input(input, sep = ':'):
 				iv = ivf
 			vals.append(iv)
 		except:
-			vals.append(s)
+			if s.lower() == 'true':
+				vals.append(True)
+			elif s.lower() == 'false':
+				vals.append(False)
+			else:
+				vals.append(s)
 	if not(is_struct):
 		return vals[0]
 	return vals	

@@ -46,7 +46,7 @@ def read_csv(filename, include_headers = True, sep = ',', cleanf = lambda x: x):
 	lines = []
 	start_pos = 0 if include_headers else 1
 	lines = map(lambda y: y.strip(), txt.split("\n"))[start_pos:]
-	return map(lambda x: x.split(sep), filter(lambda y: not(y in ['', ' ', "\t"]), lines))
+	return map(lambda x: x.split(sep), filter(lambda y: not(y in ['', ' ', "\t", None]), lines))
 
 # Evaluate and parse an input argument value.
 def standard_eval_input(input, sep = ':'):

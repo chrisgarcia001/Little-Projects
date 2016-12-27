@@ -73,7 +73,7 @@ def read_params(filename, sep=',', input_evaluator_f = standard_eval_input):
 	lines = read_csv(filename, sep=sep)
 	h = {}
 	for line in lines:
-		if len(line) > 1:
+		if len(line) > 1 and not(line[0].startswith('#')):
 			h[line[0]] = input_evaluator_f(line[1])
 	return h
 	

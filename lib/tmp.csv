@@ -1,6 +1,9 @@
+# This is  a comment,
 a,1
 b,2
 c,3abc
+# Another comment,
 d,16.475
 e,the letter e
 f,3.3:2:hello
+# A third comment,

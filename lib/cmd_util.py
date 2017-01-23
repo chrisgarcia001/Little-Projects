@@ -24,3 +24,14 @@ def read_cmd_params(cmd_args, mainfile_suffix=None, key_prefix='-', input_evalua
 	keys = map(lambda x: x[len(key_prefix):], map(lambda y: cmd_args[y], key_inds))
 	vals = map(lambda x: input_evaluator_f(cmd_args[x + 1]), key_inds)
 	return dict(zip(keys, vals))
+
+# Performs smart param reading by detecting whether the info in cmd_args points to a CSV parameter file 
+# or whether it contains the params itself. It does so by looking to see if cmd_args contains a key_inds
+# named whatever is contained in csv_param_designator (e.g., defaults to see if there is a key called 'params').
+# The rest of the arguments are as shown above.	
+def read_params(cmd_args, mainfile_suffix=None, key_prefix='-', input_evaluator_f=cv.standard_eval_input, csv_param_designator='params'):
+	params = read_cmd_params(cmd_args, mainfile_suffix, key_prefix, input_evaluator_f)
+	if params.has_key(csv_param_designator):
+		return cv.read_params(params['params'], input_evaluator_f=input_evaluator_f)
+	return params
+	

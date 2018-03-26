@@ -1,3 +1,8 @@
+# Note - this uses the restriktor package for constrained regression.
+#      Available at: http://www.restriktor.ugent.be/
+
+library('restriktor') # Used for the constrained regression.
+
 
 data <- read.csv('ss-data.csv')
 
@@ -100,20 +105,32 @@ td <- subset(data, Area.Type == 'D')
 # Set the linear regression equation form
 reg.form <- SMART.SCALE.Score ~ Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + Land.Use.Score + 0
 
-# Build the linear model for each area type - coefficients should roughly match those in the November 2017 technical guide. 
-lm.a <- lm(reg.form, data=ta)
-lm.b <- lm(reg.form, data=tb)
-lm.c <- lm(reg.form, data=tc)
-lm.d <- lm(reg.form, data=td)
+# Build a constrained regression model to find the best fit given that 1) 0 <= each variable <= 1, and 2) sum(variables) = 1			
+constraints <- 'Safety.Score > 0
+				Congestion.Score > 0
+                Accessibility.Score > 0
+				Environmental.Score > 0
+				Economic.Score > 0
+                Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + Land.Use.Score == 1'				
+fit.a <- lm(reg.form, data=ta)
+restr.a <- restriktor(fit.a, constraints = constraints)
+summary(restr.a)
 
-message('Summary for linear model of Area Type A')
-summary(lm.a)
-message('Summary for linear model of Area Type B')
-summary(lm.b)
-message('Summary for linear model of Area Type C')
-summary(lm.c)
-message('Summary for linear model of Area Type D')
-summary(lm.d)
+
+# Build the linear model for each area type - coefficients should roughly match those in the November 2017 technical guide. 
+# lm.a <- lm(reg.form, data=ta)
+# lm.b <- lm(reg.form, data=tb)
+# lm.c <- lm(reg.form, data=tc)
+# lm.d <- lm(reg.form, data=td)
+
+# message('Summary for linear model of Area Type A')
+# summary(lm.a)
+# message('Summary for linear model of Area Type B')
+# summary(lm.b)
+# message('Summary for linear model of Area Type C')
+# summary(lm.c)
+# message('Summary for linear model of Area Type D')
+# summary(lm.d)
 
 # See here for QP with constraints: http://zoonek.free.fr/blosxom/R/2012-06-01_Optimization.html
 # Even better: https://www.rdocumentation.org/packages/restriktor/versions/0.1-80.711/topics/restriktor

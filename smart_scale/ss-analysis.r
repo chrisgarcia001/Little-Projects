@@ -61,6 +61,7 @@ ss.sd <- sd(data$SMART.SCALE.Score, na.rm=TRUE)
 aggregate(data$SMART.SCALE.Score ~ data$Area.Type, FUN=mean)
 aggregate(data$SMART.SCALE.Score ~ data$District, FUN=mean)
 
+
 # Look at project-based score data. 
 pscore.data <- data[21:ncol(data)]
 nrow(na.omit(pscore.data)) / nrow(pscore.data)  # Percent of rows without any missing project-based score data
@@ -73,6 +74,13 @@ plot(1:length(sort(data$SMART.SCALE.Score)), log(sort(data$SMART.SCALE.Score)), 
 plot(data$Benefit.Rank, data$SMART.SCALE.Score, col='blue', pch=16) 
 plot(data$State.Rank, data$SMART.SCALE.Score, col='blue', pch=16) 
 plot(data$District.Rank, data$SMART.SCALE.Score, col='blue', pch=16) 
+
+# Look at plots - cut off at 100 to exclude the outliers
+boxplot(SMART.SCALE.Score~Area.Type,data=data, main="Car Milage Data",
+        xlab="Area Type", ylab="Smart Scale Score", ylim=c(0, 100), col="yellow") 
+
+boxplot(SMART.SCALE.Score~District,data=data, main="Car Milage Data",
+        xlab="Area Type", ylab="Smart Scale Score", ylim=c(0, 100), col="yellow") 
 
 # --------------- Part 3: Investigating Smart Scale Calculation --------------------------
 # Look at Smart Scale Score fit by area type.

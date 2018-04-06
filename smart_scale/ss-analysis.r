@@ -34,11 +34,14 @@ for(col in numeric.columns) {
 	data[[col]] <- as.numeric(as.character(data[[col]]))
 }
 
+# Impute 0 to all missing Land.Use.Score values, since area types C and D don't use it.
+data[[20]] <- imputer.f(data[[20]])
+
 imputer.f <- impute.0 # Missing value imputation function - can change if needed
 
 # Impute missing values to component scores and print out the percent missing in each column.
-for(i in 8:20) {
-	message(paste('Percent Missing Values for Column "', colnames(data)[i], '": ', 100*(1 - (length(sort(data[[i]]))/nrow(data)))))
+for(i in 8:19) {
+	message(paste('Percent Missing Values for Column "', colnames(data)[i], '": ', round(100*(1 - (length(sort(data[[i]]))/nrow(data))), 2)))
 	data[[i]] <- imputer.f(data[[i]])
 }
 
@@ -79,7 +82,7 @@ plot(data$District.Rank, data$SMART.SCALE.Score, col='blue', pch=16)
 # For a given data frame, a set of weights, and a set of selected columns, this function returns a new
 # vector corresponding to the weighted averages of the columns.
 weighted.column.average <- function(data.frame, weight.vec, selected.columns) {
-	v <- rep(0, nrow(data.frame))
+	v <- 0 
 	for(i in 1:length(weight.vec)) {
 		v <- v + (weight.vec[i] * data.frame[[selected.columns[i]]])
 	}
@@ -87,29 +90,43 @@ weighted.column.average <- function(data.frame, weight.vec, selected.columns) {
 }
 
 # Calculate the composite factor scores (except Land Use, which is APPARENTLY already given in the data) from 
-# component scores according to the Smart Scale November 2017 technical guide.
+# component scores according to the Smart Scale November 2017 technical guide, p. 40.
 data$Safety.Score <- weighted.column.average(data, c(0.5, 0.5), c('Crash.Frequency.Score', 'Crash.Rate.Score'))
 data$Congestion.Score <- weighted.column.average(data, c(0.5, 0.5), c('Throughput.Score', 'Delay.Score'))
-data$Accessibility.Score <- weighted.column.average(data, c(0.5, 0.5), c('Access.to.Jobs', 'Disadvantaged.Access.to.Jobs', 'Multimodal.Access.Score'))
+data$Accessibility.Score <- weighted.column.average(data, c(0.6, 0.2, 0.2), c('Access.to.Jobs', 'Disadvantaged.Access.to.Jobs', 'Multimodal.Access.Score'))
 data$Environmental.Score <- weighted.column.average(data, c(0.5, 0.5), c('Air.Quality.Score', 'Enviro.Impact.Score'))
-data$Economic.Score <- weighted.column.average(data, c(0.5, 0.5), c('Econ.Dev.Support.Score', 'Intermodal.Access.Score', 'Travel.Time.Reliability.Score'))
+data$Economic.Score <- weighted.column.average(data, c(0.6, 0.2, 0.2), c('Econ.Dev.Support.Score', 'Intermodal.Access.Score', 'Travel.Time.Reliability.Score'))
 # Land use score already in data - no component scores listed.
 
-
+# Safety.Score > 0  ### --- Left out because it is the only one that results in correct results in Areas B & C.
 
 
 # This function uses constrained regression to reconstruct the weighting coefficients for a set of SS projects. Returns the fitted constrained model.
-ss.reconstruction <- function(dataset) {
+ss.reconstruction <- function(dataset, is.ab=TRUE) {
+  
   # Set the linear regression equation form
   reg.form <- SMART.SCALE.Score ~ Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + Land.Use.Score + 0
   
-  # Build a constrained regression model to find the best fit given that 1) 0 <= each variable <= 1, and 2) sum(variables) = 1			
+  # Build a constrained regression model to find the best fit given that 1) 0 <= each variable <= 1, and 2) sum(variables) = 1
   constraints <- 'Safety.Score > 0
 				          Congestion.Score > 0
                   Accessibility.Score > 0
 				          Environmental.Score > 0
 				          Economic.Score > 0
-                  Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + Land.Use.Score == 1'				
+                  Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + Land.Use.Score + 0 == 1'	
+  if(!is.ab) {
+    # Set the linear regression equation form without land use
+    reg.form <- SMART.SCALE.Score ~ Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + 0
+    
+    # Build a constrained regression model to find the best fit given that 1) 0 <= each variable <= 1, and 2) sum(variables) = 1
+    constraints <- '
+				            Congestion.Score > 0
+                    Accessibility.Score > 0
+                    Environmental.Score > 0
+				            Economic.Score > 0
+                    Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + 0 == 1'	
+  }
+  
   fit <- lm(reg.form, data=dataset)
   restriktor(fit, constraints = constraints)
 }
@@ -121,14 +138,40 @@ tb <- subset(data, Area.Type == 'B')
 tc <- subset(data, Area.Type == 'C')
 td <- subset(data, Area.Type == 'D')
 
-rs.a <- ss.reconstruction(ta)
+
+rs.a <- ss.reconstruction(ta, TRUE)
 summary(rs.a)
-rs.b <- ss.reconstruction(tb)
+
+rs.b <- ss.reconstruction(tb, TRUE)
 summary(rs.b)
-rs.c <- ss.reconstruction(tc)
+
+rs.c <- ss.reconstruction(tc, FALSE)
 summary(rs.c)
-rs.d <- ss.reconstruction(td)
-summary(rs.b)
+
+rs.d <- ss.reconstruction(td, FALSE)
+summary(rs.d)
+
+
+
+# ------------- SCRAPS ----------------------------------
+reg.form <- SMART.SCALE.Score ~ Safety.Score + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score + Land.Use.Score + 0
+
+f2 <- Land.Use.Score ~ Congestion.Score #Safety.Score# + Congestion.Score + Accessibility.Score + Environmental.Score + Economic.Score
+
+cst.c <- 'Congestion.Score > 0'	
+summary(lm(reg.form, data=tc))
+summary(lm(f2, data=tc))
+rs.c <- ss.reconstruction(tc, constraints=cst.c)
+summary(rs.c)
+
+cor(tc[c('Safety.Score', 'Congestion.Score', 'Accessibility.Score', 'Environmental.Score', 'Economic.Score', 'Land.Use.Score')])
+
+
+
+
+rs.d <- ss.reconstruction(td, constraints=cst.c)
+summary(lm(reg.form, data=td))
+summary(rs.d)
 
 
 

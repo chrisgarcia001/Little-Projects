@@ -1,7 +1,9 @@
 # Note - this uses the restriktor package for constrained regression.
 #      Available at: http://www.restriktor.ugent.be/
 
-library('restriktor') # Used for the constrained regression.
+library(restriktor) # Used for the constrained regression.
+library(ggplot2)
+library(gridExtra)
 
 
 data <- read.csv('ss-data.csv')
@@ -31,23 +33,22 @@ impute.0 <- function(vec) {
 # Clean and recode numeric columns.
 numeric.columns <- colnames(data)[8:ncol(data)]
 for(col in numeric.columns) {
-	data[[col]] <- as.numeric(as.character(data[[col]]))
+  data[[col]] <- as.numeric(as.character(data[[col]]))
 }
-
-# Impute 0 to all missing Land.Use.Score values, since area types C and D don't use it.
-data[[20]] <- imputer.f(data[[20]])
 
 imputer.f <- impute.0 # Missing value imputation function - can change if needed
 
 # Impute missing values to component scores and print out the percent missing in each column.
-for(i in 8:19) {
-	message(paste('Percent Missing Values for Column "', colnames(data)[i], '": ', round(100*(1 - (length(sort(data[[i]]))/nrow(data))), 2)))
-	data[[i]] <- imputer.f(data[[i]])
+for(i in 8:ncol(data)) {
+  message(paste('Percent Missing Values for Column ', colnames(data)[i], ': ', 
+                round(100*(1 - (length(sort(data[[i]]))/nrow(data))), 2)))
+  data[[i]] <- imputer.f(data[[i]])
 }
 
 # Properly binarize binary columns.
 data$Statewide.High.Priority <- as.numeric(sapply(data$Statewide.High.Priority, function(x){if(x == 'x') return(1); return(0);}))
 data$District.Grant <- as.numeric(sapply(data$District.Grant, function(x){if(x == 'x') return(1); return(0);}))
+
 
 # --------------- Part 2: Data Exploration --------------------------
 
@@ -87,7 +88,7 @@ boxplot(SMART.SCALE.Score~District,data=data, main="Car Milage Data",
 # In this section we use regression to calculate the actual weights of each factor by area type. These
 # can be then compared to the stated weights in the technical guide to see if they are in fact consistent.
 
-# Step 1: Normalize Measures 
+#------ Step 1: Normalization of Measure Weights
 measure.cols <- c('Throughput.Score', 'Delay.Score',
                   'Econ.Dev.Support.Score', 'Intermodal.Access.Score', 'Travel.Time.Reliability.Score',
                   'Access.to.Jobs', 'Disadvantaged.Access.to.Jobs', 'Multimodal.Access.Score',
@@ -95,14 +96,15 @@ measure.cols <- c('Throughput.Score', 'Delay.Score',
                   'Air.Quality.Score', 'Enviro.Impact.Score')
 for(i in measure.cols) {data[[i]] <- 100 * data[[i]] / max(data[[i]])}
 
+#------ Step 2: Apply Measure Weights
 # For a given data frame, a set of weights, and a set of selected columns, this function returns a new
 # vector corresponding to the weighted averages of the columns.
 weighted.column.average <- function(data.frame, weight.vec, selected.columns) {
-	v <- 0 
-	for(i in 1:length(weight.vec)) {
-		v <- v + (weight.vec[i] * data.frame[[selected.columns[i]]])
-	}
-	v
+  v <- 0 
+  for(i in 1:length(weight.vec)) {
+    v <- v + (weight.vec[i] * data.frame[[selected.columns[i]]])
+  }
+  v
 }
 
 # Calculate the composite factor scores (except Land Use, which is APPARENTLY already given in the data) from 
@@ -114,17 +116,18 @@ data$Safety.Score <- weighted.column.average(data, c(0.5, 0.5), c('Crash.Frequen
 data$Environmental.Score <- weighted.column.average(data, c(0.5, 0.5), c('Air.Quality.Score', 'Enviro.Impact.Score'))
 # Land use score already in data - no component scores listed.
 
-# Given a dataframe with calculated factor scores, compute the smart scale score according to 
-# Table 4.2, p.36 of the technical guide
-calc.ss.score <- function(dataset) {
+#------ Step 3: Apply Factor Weights
+# Given a dataframe with calculated factor scores, this function computes the project value according to 
+# Table 4.2, p.36 of the technical guide.
+calc.proj.value <- function(dataset) {
   factor.cols.ab <- c('Congestion.Score', 'Economic.Score', 'Accessibility.Score', 'Safety.Score',
-                       'Environmental.Score', 'Land.Use.Score')
+                      'Environmental.Score', 'Land.Use.Score')
   factor.cols.cd <- c('Congestion.Score', 'Economic.Score', 'Accessibility.Score', 'Safety.Score',
                       'Environmental.Score')
   sa <- weighted.column.average(dataset, c(0.45, 0.5, 0.15, 0.5, 0.1, 0.2), factor.cols.ab)
-  sb <- weighted.column.average(dataset, c(0.45, 0.5, 0.15, 0.5, 0.1, 0.2), factor.cols.ab)
-  sc <- weighted.column.average(dataset, c(0.45, 0.5, 0.15, 0.5, 0.1, 0.2), factor.cols.cd)
-  sd <- weighted.column.average(dataset, c(0.45, 0.5, 0.15, 0.5, 0.1, 0.2), factor.cols.cd)
+  sb <- weighted.column.average(dataset, c(0.15, 0.2, 0.25, 0.2, 0.1, 0.1), factor.cols.ab)
+  sc <- weighted.column.average(dataset, c(0.15, 0.25, 0.25, 0.25, 0.1), factor.cols.cd)
+  sd <- weighted.column.average(dataset, c(0.10, 0.35, 0.15, 0.3, 0.1), factor.cols.cd)
   scores <- c()
   for(i in 1:nrow(dataset)) {
     if(dataset[i, 'Area.Type'] == 'A') {scores[i] <- sa[i]}
@@ -134,6 +137,44 @@ calc.ss.score <- function(dataset) {
   }
   scores
 }
+
+# Add a new column to data with our calculated project benefit scores.
+data['Calc.Project.Benefit.Score'] <- calc.proj.value(data)
+
+data[['Calc.Project.Benefit.Score']]
+data[['Project.Benefit.Score']]
+
+#------ Step 4: Apply Factor Weights  
+data['Calc.SMART.SCALE.Score'] <- 1e7 * data[['Calc.Project.Benefit.Score']] / data[['SMART.SCALE.Request']] 
+
+data[['Calc.SMART.SCALE.Score']][1:10]
+data[['SMART.SCALE.Score']][1:10]
+
+ss.scatter.plot <- function(dataset, title='Actual vs. Assigned Smart Scale Scores') {
+  ggplot(data=dataset,
+         aes(x=Calc.SMART.SCALE.Score, y=SMART.SCALE.Score)) +
+    geom_point() + 
+    geom_smooth(method=lm) +
+    labs(x='Calculated Smart Scale Score', y='Assigned Smart Scale Score', 
+         title=title)
+}
+
+sp.a <- ss.scatter.plot(subset(data, Area.Type == 'A'), 'Area Type A')
+sp.b <- ss.scatter.plot(subset(data, Area.Type == 'B'), 'Area Type B')
+sp.c <- ss.scatter.plot(subset(data, Area.Type == 'C'), 'Area Type C')
+sp.d <- ss.scatter.plot(subset(data, Area.Type == 'D'), 'Area Type D')
+
+grid.arrange(sp.a, sp.b, sp.c, sp.d, nrow=2)
+
+# Full Plot - broken down by type
+ggplot(data=data,
+       aes(x=SMART.SCALE.Score, y=Calc.SMART.SCALE.Score, color=Area.Type, shape=Area.Type)) +
+  geom_point() + 
+  geom_smooth(method=lm) +
+  labs(x='Calculated Smart Scale Score', y='Assigned Smart Scale Score', 
+       title='Fig. 4: Calculated vs. Assigned Smart Scale Scores')
+
+# ---------------------------- RECONSTRUCTION -----------------------
 
 # Safety.Score > 0  ### --- Left out because it is the only one that results in correct results in Areas B & C.
 

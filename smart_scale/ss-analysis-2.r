@@ -251,5 +251,25 @@ rs.d <- ss.reconstruction(td, constraints=cst.c)
 summary(lm(reg.form, data=td))
 summary(rs.d)
 
+# ---------------------------------- Additional stuff
+# For a list of ranges and a vector, this function tabulates the counts by range.
+tabulate.by.ranges <- function(v, ranges) {
+  counts <- c()
+  ranges <- sort(ranges)
+  i <- 1
+  for(i in 1:(length(ranges) + 1)) {
+    if(i == 1) {
+      counts[1] <- sum(v <= ranges[1])
+    }
+    else if(i <= length(ranges)) {
+      counts[i] <- sum((v > ranges[i - 1]) & (v <= ranges[i]))
+    }
+    else {
+      counts[i] <- sum(v > ranges[i - 1])
+      
+    }
+  }
+  counts
+}
 
 

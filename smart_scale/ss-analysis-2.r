@@ -272,4 +272,19 @@ tabulate.by.ranges <- function(v, ranges) {
   counts
 }
 
+tabulate.by.ranges <- function(v, ranges) {
+  counts <- c()
+  ranges <- sort(ranges)
+  i <- 1
+  for(i in 1:length(ranges)) {
+    if(i == 1) {
+      counts[1] <- sum(v <= ranges[1])
+    }
+    else {
+      counts[i] <- sum((v > ranges[i - 1]) & (v <= ranges[i]))
+    }
+  }
+  counts
+}
+
 

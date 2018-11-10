@@ -2,6 +2,8 @@ deduce([[p,*,q]], p, X, 3), 3.
 deduce([p], [p, +, q], X, 3, 3).
 deduce([[s,->,t],[[~,t],*,[~,u]]], [~,s], X, 3, 3). %copi p. 377.
 
+deduce([[[[p,*,s],*,q],*,r]], p, X, 3, 0).
+
 % copi p. 400-402:
 deduce([a,->, [~,a]], [~,a], X, 4, 3). % copi p. 400
 deduce([[c,->,[~,d]], [[~,e],->,d]], [c,->,[~, [~, e]]], X, 4, 3). % #11
@@ -25,7 +27,7 @@ deduce([[[d,*,[~,e]],->,f], [~,[e,+,f]]], [~,d], X, 4, 2). % #2 - no
 deduce([[[j,+,k],->,[~,l]], l], [~,j], X ,4, 2).
 deduce([[m,->,n], [m,->,[n,->,o]]], [m,->,o], X, 4). % #11 
 
-subexp_replace(S_1,[[~,p],->,[~,S_1]],S_1,[[[~,p],->,[~,S_1]],->,p]),[S_1=[S_1,->,p]]
+
 has_vars([a,b,c,d,E,f]).
 has_vars([a,b,c,d,e,f]).
 has_vars([a,[b,[c,d]],f]).

@@ -1,6 +1,12 @@
 member(X, [X|Y]).
 member(X, [Y|Z]) :- member(X, Z).
 
+append([], X, X).
+append([W|X], Y, [W|Z]) :- append(X, Y, Z).
+
+reverse([], []).
+reverse([X|Y], Z) :- reverse(Y, A), append(A, [X], Z).
+
 % --- Turn a general list into a set.
 as_set([], []).
 as_set([X|Y], Z) :- as_set(Y, Z), member(X, Z).

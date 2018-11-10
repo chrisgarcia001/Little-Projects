@@ -1,3 +1,5 @@
+:- use_module(library(tabling)).
+:- table subexp/3, subexp_replace/3, replace/3, eqv_seq_to_proof/3, eqv_seq/5.
 
 % ----------------- Core Theorem Prover ------------------
 rewrite(X, Y, Z) :- equiv(X, Y, Z).
@@ -25,24 +27,31 @@ eqv_seq_to_proof_format([A,B|R], [[A,B]|[S]]) :- eqv_seq_to_proof_format(R, S).
 
 eqv_seq_to_proof(A, R, C) :- reverse([R|A], B), eqv_seq_to_proof_format(B, C).
 
-eqv_seq(A, E, [A, R, E], D) :- 
+eqv_seq(A, E, [A, R, E], D, Seen) :- 
 	D >= 1, not(has_vars(A)), 
-	replace(A, E, R).
-eqv_seq(A, X, [A,R|P], D) :-
+	replace(A, E, R),
+	not(member(E, [A|Seen])).
+eqv_seq(A, B, C, D, Seen) :-
+	D >= 2, E is D - 1, eqv_seq(A, B, C, E, Seen).
+eqv_seq(A, X, [A,R|P], D, Seen) :-
 	D >= 2, not(has_vars(A)), F is D - 1,
 	replace(A, E, R), 
-	eqv_seq(E, X, P, F).
+	eqv_seq(E, X, P, F, [A|Seen]).
 
 %deduce(Premises, Conclusion, Proof, MaxTotalDepth, MaxEquivalenceDepth, Seen).
 deduce(Prem, Conc, Proof, Depth, Eqv) :- deduce(Prem, Conc, Proof, Depth, Eqv, []).
 deduce([], C, [[C, R]], D, E, _) :- D >= 0, E >= 0, rule([], C, R).
+
+% Below - next 2 clauses - use 1-level or n-level equivalences for the premeses.
 deduce(Prems, C, [[C, premise]], Depth, Eqv, _) :- 
 	Depth >= 0, Eqv >= 0, member(C, Prems).
-deduce(Prems, C, Proof, Depth, Eqv, _) :- 
-	Depth >= 1, member(P, Prems), eqv_seq(P, C, S, Eqv),
-	eqv_seq_to_proof(S, premise, Proof).
-%deduce(Prems, C, [[C, R],[[P, premise]]], Depth, Eqv, _) :- 
-%	Depth >= 1, Eqv >= 0, member(P, Prems), replace(P, C, R).
+
+%deduce(Prems, C, Proof, Depth, Eqv, _) :- 
+%	Depth >= 1, member(P, Prems), eqv_seq(P, C, S, Eqv, []),
+%	eqv_seq_to_proof(S, premise, Proof).
+
+deduce(Prems, C, [[C, R],[[P, premise]]], Depth, Eqv, _) :- 
+	Depth >= 1, Eqv >= 0, member(P, Prems), replace(P, C, R).
 deduce(Prems, Conc, [[Conc, Rule]|Rproofs], Depth, Eqv, Seen) :-
 	Depth > 0, Eqv >= 0, E is Depth - 1, 
 	not(member(Conc, Seen)),

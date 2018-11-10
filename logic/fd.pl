@@ -1,4 +1,5 @@
-consult(copi).
+consult(copi_basic).
+consult(util).
 consult(formal_deduction).
 
 

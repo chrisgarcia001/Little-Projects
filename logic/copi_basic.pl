@@ -19,6 +19,7 @@ rule([[P, +, Q], [~, P]], Q, ds).
 rule([[[P, ->, Q], *, [R, ->, S]], [P, +, R]], [Q, +, S], cd).
 rule([[P, ->, Q]], [P, ->, [P, *, Q]], abs).
 rule([[P, *, Q]], P, simp).
+rule([[P, *, Q]], Q, simp).
 rule([P, Q], [P, *, Q], conj).
 rule([P], [P, +, Q], add).
 %rule([], [P, +, [~, P]], ex_middle).
@@ -32,13 +33,14 @@ equiv([~, [P, *, Q]], [[~, P], +, [~, Q]], demorgan).
 equiv([~, [P, +, Q]], [[~, P], *, [~, Q]], demorgan).
 equiv([P, *, [Q, +, R]], [[P, *, Q], +, [P, *, R]], dist).
 equiv([P, +, [Q, *, R]], [[P, +, Q], *, [P, +, R]], dist).
-equiv([P, ->, Q], [[~, Q], ->, [~, P]], transp).
 equiv([P, ->, Q], [[~, P], +, Q], mimp).
 equiv([[P, *, Q], ->, R], [P, ->, [Q, ->, R]], export).
 equiv([P, =, Q], [[P, ->, Q], *, [Q, ->, P]], mequiv).
 
 % --------- Qualified Equivalences - for performance -----  
+equiv([P, ->, Q], [[~, Q], ->, [~, P]], transp) :- depth(P, D), depth(Q, D), D = 0.
 %equiv(P, [P, *, P], tautology) :- depth(P, D), D = 0.
 equiv(P, [P, +, P], tautology) :- depth(P, D), D = 0.
 equiv([~, P], [[~, P], +, [~, P]], tautology) :- depth(P, D), D = 0.
 equiv([~, [~, P]], P, dn) :- unary_op_start_depth(~, P, D), D = 0.
+

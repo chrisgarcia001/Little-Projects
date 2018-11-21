@@ -1,0 +1,14 @@
+deduce([[[a,+,b],+,c]], [a,+,[b,+,c]], X, 6, 0). % # Alt. assoc rule - yes
+deduce([a,[a,->,b]], b, X, 6, 1). % MP - yes
+deduce([a], [~,[~,a]], X, 4, 1). % # Yes
+deduce([[~,[~,a]]], a, X, 4, 1). % # Yes
+deduce([[a,+,b]], [[~,[~,a]],+,b], X, 4, 1). % # Yes
+deduce([[[~,[~,a]],+,b]], [a,+,b], X, 4, 1). % # Yes
+deduce([[a,+,b], [~,a]], b, X, 4, 1). % # Yes
+deduce([[a,->,b],[b,->,c]] [a,->,c], b, X, 5, 3). % # No
+deduce([[a,->,b], [~,b]], [~,a], X, 5, 1). % # Yes
+
+
+
+
+

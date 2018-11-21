@@ -45,6 +45,12 @@ deduce([], C, [[C, R]], D, E, _) :- D >= 0, E >= 0, rule([], C, R).
 deduce(Prems, C, [[C, premise]], Depth, Eqv, _) :- 
 	Depth >= 0, Eqv >= 0, member(C, Prems).
 
+deduce(Prems, Conc, [[Conc, Rule]|Rproofs], Depth, Eqv, Seen) :-
+	Depth > 0, Eqv >= 0, E is Depth - 1, 
+	not(member(Conc, Seen)),
+	rule(P, Conc, Rule),
+	deduce_all(Prems, P, Rproofs, E, Eqv, Seen).
+
 % --------------- Extending premise equivalence predicates --------	
 %deduce(Prems, C, Proof, Depth, Eqv, _) :- 
 %	Depth >= 1, member(P, Prems), eqv_seq(P, C, S, Eqv, []),
@@ -59,12 +65,6 @@ deduce(Prems, C, [premise_to_equivalence_sequence, S], Depth, Eqv, _) :-
 % ----------------------------------------------------------------
 
 
-	
-deduce(Prems, Conc, [[Conc, Rule]|Rproofs], Depth, Eqv, Seen) :-
-	Depth > 0, Eqv >= 0, E is Depth - 1, 
-	not(member(Conc, Seen)),
-	rule(P, Conc, Rule),
-	deduce_all(Prems, P, Rproofs, E, Eqv, Seen).
 deduce(Prems, Conc, [[Conc, Rule]|Rproof], Depth, Eqv, Seen) :-
 	Depth > 0, Eqv > 0, E is Depth - 1, F is Eqv - 1,
     not(has_vars(Conc)),

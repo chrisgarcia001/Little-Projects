@@ -12,7 +12,9 @@ rewrite([A, +, A], [2, *, A], double).
 
 
 % -------------- Core Theorem Prover ----------------
-subexp([X|_], X) :- not(atomic(X)).
+:- table subexp/2, subexp_replace/3, prove/5.
+
+subexp([X|_], X). %:- not(atomic(X)).
 subexp([_|Y], Z) :- subexp(Y, Z).
 subexp(X, Y) :- member(Z, X), subexp(Z, Y).
 
